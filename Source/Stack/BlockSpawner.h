@@ -28,10 +28,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SpawnPoints")
+	UFUNCTION(BlueprintCallable, Category = "Pawn Settings")
+	void SpawnTile();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnPoints")
 	class UArrowComponent* RightSpawnPoint;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SpawnPoints")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnPoints")
 	class UArrowComponent* LeftSpawnPoint;
 
 	UPROPERTY(EditAnywhere)
@@ -39,4 +42,15 @@ public:
 
 	class UCameraComponent* OurCamera;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
+	float ZOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
+	bool bIsRightTurn = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
+	class ATile* CurrentTile;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
+	class ATile* PreviousTile;
 };
