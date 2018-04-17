@@ -107,7 +107,6 @@ void ABlockSpawner::SpawnTile()
 		return;
 	}
 
-
 	if (bIsRightTurn)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Right SpawnPointLoc: %s"), *RightSpawnPoint->GetComponentTransform().GetLocation().ToString());
@@ -115,6 +114,9 @@ void ABlockSpawner::SpawnTile()
 		if (CurrentTile)
 		{
 			CurrentTile->MoveDirection = FVector{ 0, 1.0f, 0 };
+			CurrentTile->StartPosition = RightSpawnPoint->GetComponentTransform().GetLocation();
+			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
+			CurrentTile->CurrentDestLocation = CurrentTile->EndPosition;
 		}
 	}
 	else
@@ -124,6 +126,9 @@ void ABlockSpawner::SpawnTile()
 		if (CurrentTile)
 		{
 			CurrentTile->MoveDirection = FVector{ -1.0f, 0, 0 };
+			CurrentTile->StartPosition = LeftSpawnPoint->GetComponentTransform().GetLocation();
+			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
+			CurrentTile->CurrentDestLocation = CurrentTile->EndPosition;
 		}
 	}
 

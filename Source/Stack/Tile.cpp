@@ -9,7 +9,8 @@ ATile::ATile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Speed = 300;
+	Speed = 300.0f;
+	ReverseDistance = 700.0f;
 
 	struct FConstructorStatics
 	{
@@ -43,7 +44,33 @@ void ATile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Moving platform every second
-	FVector DeltaLocation = MoveDirection * (DeltaTime * Speed);
-	AddActorWorldOffset(DeltaLocation);
+	if (ShouldReverse())
+	{
+		ReverseDirection();
+	}
+
+	FVector CurrentLocation = GetActorLocation();
+	FVector Direction = CurrentDestLocation - CurrentLocation;
+	Direction.Normalize();
+
+	CurrentLocation += Speed * DeltaTime * Direction;
+	SetActorLocation(CurrentLocation, false, nullptr, ETeleportType::None);
+}
+
+void ATile::ReverseDirection()
+{
+	CurrentDestLocation = (CurrentDestLocation == StartPosition) ? EndPosition : StartPosition;
+}
+
+bool ATile::ShouldReverse() const
+{
+	if (CurrentDestLocation == StartPosition)
+	{
+		return FVector::Dist(EndPosition, GetActorLocation()) >= ReverseDistance;
+	}
+	else
+	{
+		return FVector::Dist(StartPosition, GetActorLocation()) >= ReverseDistance;
+	}
 }
 
