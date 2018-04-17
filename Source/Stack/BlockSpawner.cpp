@@ -7,6 +7,7 @@
 #include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
 #include "Runtime/Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
+#include "Runtime/Engine/Public/Rendering/PositionVertexBuffer.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 
@@ -55,6 +56,20 @@ void ABlockSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Spawning One Tile for Prev
+	auto World = GetWorld();
+
+	if (!World)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cant find World!"));
+		return;
+	}
+
+	FTransform Trans{ FVector{0, 0, -10.0f} };
+	PreviousTile = World->SpawnActor<ATile>(ATile::StaticClass(), Trans);
+	PreviousTile->Speed = 0;
+
+
 	SpawnTile();
 	
 }
@@ -67,6 +82,10 @@ void ABlockSpawner::SetTileCallback()
 	AddActorWorldOffset(FVector{ 0, 0, ZOffset });
 
 	// Calculate Tile Scale
+	CalcTilesIntersection();
+	//CurrentTile->SetActorScale3D(FVector{ 0.5f, 0.5f, 1.0f });
+
+	
 
 	// Spawning New Tile with old scales
 	SpawnTile();
@@ -74,7 +93,11 @@ void ABlockSpawner::SetTileCallback()
 
 void ABlockSpawner::CalcTilesIntersection()
 {
+	// Get current tile location
+	// Get previous tile location
+	FVector NewCenter = PreviousTile->GetActorLocation() - CurrentTile->GetActorLocation();
 
+	UE_LOG(LogTemp, Warning, TEXT("New Center: %s"), *NewCenter.ToString());
 }
 
 // Called every frame
@@ -109,7 +132,6 @@ void ABlockSpawner::SpawnTile()
 
 	if (bIsRightTurn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Right SpawnPointLoc: %s"), *RightSpawnPoint->GetComponentTransform().GetLocation().ToString());
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), RightSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{
@@ -121,7 +143,6 @@ void ABlockSpawner::SpawnTile()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Left SpawnPointLoc: %s"), *LeftSpawnPoint->GetComponentTransform().GetLocation().ToString());
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), LeftSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{
