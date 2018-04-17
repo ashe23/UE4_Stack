@@ -21,6 +21,8 @@ protected:
 
 	void SetTileCallback();
 
+	void CalcTilesIntersection();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

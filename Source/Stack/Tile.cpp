@@ -9,7 +9,7 @@ ATile::ATile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Speed = 100;
+	Speed = 300;
 
 	struct FConstructorStatics
 	{

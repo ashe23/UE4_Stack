@@ -8,6 +8,7 @@
 #include "Runtime/Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
 
 
 // Sets default values
@@ -21,18 +22,26 @@ ABlockSpawner::ABlockSpawner()
 
 	// Setting default spawn points (Arrow components)
 	RightSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("RightSpawnPoint"));
+	RightSpawnPoint->SetRelativeLocation(FVector{0, -500.0f, 0});
+	RightSpawnPoint->SetRelativeRotation(FRotator{0, 90.0f, 0 });
+
 	LeftSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("LeftSpawnPoint"));
+	LeftSpawnPoint->SetRelativeLocation(FVector{500.0f, 0, 0});
+	LeftSpawnPoint->SetRelativeRotation(FRotator{0, 180.0f, 0.0f});
+
+	RightSpawnPoint->SetupAttachment(RootComponent);
+	LeftSpawnPoint->SetupAttachment(RootComponent);
 
 	RightSpawnPoint->bHiddenInGame = false;
 	LeftSpawnPoint->bHiddenInGame = false;
 
 	OurCameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	OurCameraSpringArm->SetupAttachment(RootComponent);
-	//OurCameraSpringArm->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 50.0f), FRotator(-60.0f, 0.0f, 0.0f));
-	OurCameraSpringArm->TargetArmLength = 500.f;
+	OurCameraSpringArm->TargetArmLength = 400.f;
 	OurCameraSpringArm->bEnableCameraLag = true;
 	OurCameraSpringArm->CameraLagSpeed = 3.0f;
 	OurCameraSpringArm->bDoCollisionTest = false;
+	OurCameraSpringArm->SetRelativeRotation(FRotator{-30.0f, -45.0f, 0.0f});
 
 	OurCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("GameCamera"));
 	OurCamera->SetupAttachment(OurCameraSpringArm, USpringArmComponent::SocketName);
@@ -57,14 +66,21 @@ void ABlockSpawner::SetTileCallback()
 	// Moving our Pawn Root Component Up By Zoffset
 	AddActorWorldOffset(FVector{ 0, 0, ZOffset });
 
+	// Calculate Tile Scale
+
+	// Spawning New Tile with old scales
 	SpawnTile();
+}
+
+void ABlockSpawner::CalcTilesIntersection()
+{
+
 }
 
 // Called every frame
 void ABlockSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -73,13 +89,10 @@ void ABlockSpawner::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("SetTile", IE_Pressed, this, &ABlockSpawner::SetTileCallback);
-
 }
 
 void ABlockSpawner::SpawnTile()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Spawning Tile"));
-	
+{	
 	if (CurrentTile && CurrentTile->IsValidLowLevel())
 	{
 		CurrentTile->Speed = 0;
@@ -97,20 +110,20 @@ void ABlockSpawner::SpawnTile()
 
 	if (bIsRightTurn)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Right SpawnPointLoc: %s"), *RightSpawnPoint->GetComponentTransform().GetLocation().ToString());
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), RightSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{
 			CurrentTile->MoveDirection = FVector{ 0, 1.0f, 0 };
-			UE_LOG(LogTemp, Warning, TEXT("Spawned Successfully"));
 		}
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Left SpawnPointLoc: %s"), *LeftSpawnPoint->GetComponentTransform().GetLocation().ToString());
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), LeftSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{
 			CurrentTile->MoveDirection = FVector{ -1.0f, 0, 0 };
-			UE_LOG(LogTemp, Warning, TEXT("Spawned Successfully"));
 		}
 	}
 
