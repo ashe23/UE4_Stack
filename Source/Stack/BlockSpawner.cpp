@@ -19,6 +19,7 @@ ABlockSpawner::ABlockSpawner()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	ZOffset = 10.0f;
+	SpawnScale = FVector{ 1.f };
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
