@@ -8,6 +8,7 @@
 #include "Runtime/Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
 #include "Runtime/Engine/Public/Rendering/PositionVertexBuffer.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 
@@ -65,8 +66,8 @@ void ABlockSpawner::BeginPlay()
 		return;
 	}
 
-	FTransform Trans{ FVector{0, 0, -10.0f} };
-	PreviousTile = World->SpawnActor<ATile>(ATile::StaticClass(), Trans);
+	FTransform FirstTileTransform{ FVector{0, 0, -10.0f} };
+	PreviousTile = World->SpawnActor<ATile>(ATile::StaticClass(), FirstTileTransform);
 	PreviousTile->Speed = 0;
 
 
@@ -75,17 +76,18 @@ void ABlockSpawner::BeginPlay()
 }
 
 void ABlockSpawner::SetTileCallback()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Setting tile callback!"));
-
+{	
 	// Moving our Pawn Root Component Up By Zoffset
 	AddActorWorldOffset(FVector{ 0, 0, ZOffset });
 
 	// Calculate Tile Scale
-	CalcTilesIntersection();
-	//CurrentTile->SetActorScale3D(FVector{ 0.5f, 0.5f, 1.0f });
+	SetCurrentTileLocation();
+	SetCurrentTileScale();
 
-	
+	PreviousTile = CurrentTile;
+	CurrentTile->Speed = 0;
+
+	UpdateArrowLocations();
 
 	// Spawning New Tile with old scales
 	SpawnTile();
@@ -93,11 +95,9 @@ void ABlockSpawner::SetTileCallback()
 
 void ABlockSpawner::CalcTilesIntersection()
 {
-	// Get current tile location
-	// Get previous tile location
-	FVector NewCenter = PreviousTile->GetActorLocation() - CurrentTile->GetActorLocation();
+	
 
-	UE_LOG(LogTemp, Warning, TEXT("New Center: %s"), *NewCenter.ToString());
+	
 }
 
 // Called every frame
@@ -115,13 +115,7 @@ void ABlockSpawner::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 }
 
 void ABlockSpawner::SpawnTile()
-{	
-	if (CurrentTile && CurrentTile->IsValidLowLevel())
-	{
-		CurrentTile->Speed = 0;
-		PreviousTile = CurrentTile;
-	}
-
+{		
 	auto World = GetWorld();
 
 	if (!World)
@@ -130,11 +124,13 @@ void ABlockSpawner::SpawnTile()
 		return;
 	}
 
+	// should spawn based on previuos tile scale and location
 	if (bIsRightTurn)
 	{
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), RightSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{
+			CurrentTile->SetActorScale3D(SpawnScale);
 			CurrentTile->MoveDirection = FVector{ 0, 1.0f, 0 };
 			CurrentTile->StartPosition = RightSpawnPoint->GetComponentTransform().GetLocation();
 			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
@@ -146,6 +142,7 @@ void ABlockSpawner::SpawnTile()
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), LeftSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{
+			CurrentTile->SetActorScale3D(SpawnScale);
 			CurrentTile->MoveDirection = FVector{ -1.0f, 0, 0 };
 			CurrentTile->StartPosition = LeftSpawnPoint->GetComponentTransform().GetLocation();
 			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
@@ -154,5 +151,66 @@ void ABlockSpawner::SpawnTile()
 	}
 
 	bIsRightTurn = !bIsRightTurn;
+}
+
+void ABlockSpawner::SetCurrentTileLocation()
+{
+	FVector NewCenter;
+
+	if (bIsRightTurn)
+	{
+		NewCenter.X = CurrentTile->GetActorLocation().X;
+		NewCenter.Y = (CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y) / 2;
+	}
+	else
+	{
+		NewCenter.X = (PreviousTile->GetActorLocation().X - CurrentTile->GetActorLocation().X) / 2;
+		NewCenter.Y = CurrentTile->GetActorLocation().Y;
+
+	}
+	NewCenter.Z = CurrentTile->GetActorLocation().Z;
+
+	CurrentTile->SetActorLocation(NewCenter);
+}
+
+void ABlockSpawner::SetCurrentTileScale()
+{
+	FVector NewScale;
+	if (bIsRightTurn)
+	{
+		NewScale.X = PreviousTile->GetActorScale3D().X;
+		NewScale.Y = 1 - FMath::Abs(((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y) / 100));
+	}
+	else
+	{
+		NewScale.X = 1 - FMath::Abs(((PreviousTile->GetActorLocation().X - CurrentTile->GetActorLocation().X) / 100));
+		NewScale.Y = PreviousTile->GetActorScale3D().Y;
+	}
+	NewScale.Z = PreviousTile->GetActorScale3D().Z;
+
+	SpawnScale.X = NewScale.Y;
+	SpawnScale.Y = NewScale.X;
+	SpawnScale.Z = NewScale.Z;
+
+	CurrentTile->SetActorScale3D(NewScale);
+
+}
+
+void ABlockSpawner::UpdateArrowLocations()
+{
+	if (bIsRightTurn)
+	{
+		FVector NewLoc = RightSpawnPoint->GetComponentLocation();
+		NewLoc.X = PreviousTile->GetActorLocation().X;
+
+		RightSpawnPoint->SetWorldLocation(NewLoc);
+	}
+	else
+	{
+		FVector NewLoc = LeftSpawnPoint->GetComponentLocation();
+		NewLoc.Y = PreviousTile->GetActorLocation().Y;
+
+		LeftSpawnPoint->SetWorldLocation(NewLoc);
+	}
 }
 

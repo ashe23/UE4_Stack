@@ -29,6 +29,7 @@ ATile::ATile()
 	TileMesh->SetupAttachment(RootComponent);
 	TileMesh->SetStaticMesh(ConstructorStatics.SM_Mesh.Get());
 	TileMesh->SetMobility(EComponentMobility::Movable);
+	TileMesh->SetVisibility(true);
 }
 
 // Called when the game starts or when spawned

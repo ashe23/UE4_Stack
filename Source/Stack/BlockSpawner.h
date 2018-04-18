@@ -55,4 +55,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
 	class ATile* PreviousTile;
+private:
+	void SetCurrentTileLocation();
+	void SetCurrentTileScale();
+	void UpdateArrowLocations();
+
+	FVector SpawnScale;
 };
