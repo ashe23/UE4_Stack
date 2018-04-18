@@ -48,7 +48,7 @@ public:
 	float ZOffset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
-	bool bIsRightTurn = true;
+	bool bIsRightTurn = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
 	class ATile* CurrentTile;
@@ -59,6 +59,7 @@ private:
 	void SetCurrentTileLocation();
 	void SetCurrentTileScale();
 	void UpdateArrowLocations();
+	bool IsGameOver() const;
 
 	FVector SpawnScale;
 };
