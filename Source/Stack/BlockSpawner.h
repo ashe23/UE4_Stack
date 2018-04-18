@@ -61,5 +61,9 @@ private:
 	void UpdateArrowLocations();
 	bool IsGameOver() const;
 
+	FVector ScaleConverterBug(FVector & Scale);
+
 	FVector SpawnScale;
+
+	FVector NewCenter;
 };
