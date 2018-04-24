@@ -11,6 +11,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
+#include "DrawDebugHelpers.h"
 
 
 // Sets default values
@@ -25,11 +26,11 @@ ABlockSpawner::ABlockSpawner()
 
 	// Setting default spawn points (Arrow components)
 	RightSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("RightSpawnPoint"));
-	RightSpawnPoint->SetRelativeLocation(FVector{ 500.0f, 0, 0 });
+	RightSpawnPoint->SetRelativeLocation(FVector{ 300.0f, 0, 0 });
 	RightSpawnPoint->SetRelativeRotation(FRotator{ 0, 180.f, 0 });
 
 	LeftSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("LeftSpawnPoint"));
-	LeftSpawnPoint->SetRelativeLocation(FVector{0,-500.0f, 0});
+	LeftSpawnPoint->SetRelativeLocation(FVector{0,-300.0f, 0});
 	LeftSpawnPoint->SetRelativeRotation(FRotator{0, 90.f, 0});
 
 	RightSpawnPoint->SetupAttachment(RootComponent);
@@ -40,7 +41,7 @@ ABlockSpawner::ABlockSpawner()
 
 	OurCameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	OurCameraSpringArm->SetupAttachment(RootComponent);
-	OurCameraSpringArm->TargetArmLength = 400.f;
+	OurCameraSpringArm->TargetArmLength = 200.f;
 	OurCameraSpringArm->bEnableCameraLag = true;
 	OurCameraSpringArm->CameraLagSpeed = 3.0f;
 	OurCameraSpringArm->bDoCollisionTest = false;
@@ -56,30 +57,31 @@ ABlockSpawner::ABlockSpawner()
 // Called when the game starts or when spawned
 void ABlockSpawner::BeginPlay()
 {
-	Super::BeginPlay();
+	Super::BeginPlay();	
 
-	// Spawning One Tile for Prev
+	SpawnInitialTiles();
+}
+
+void ABlockSpawner::SpawnInitialTiles()
+{
 	auto World = GetWorld();
 
-	if (!World)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Cant find World!"));
-		return;
-	}
+	check(World);	
 
-	FTransform FirstTileTransform{ FVector{0, 0, -10.0f} };
+	FTransform FirstTileTransform{ FVector{ 0, 0, -10.0f } };
 	PreviousTile = World->SpawnActor<ATile>(ATile::StaticClass(), FirstTileTransform);
-	PreviousTile->Speed = 0;
+	PreviousTile->DisableMovement();
 
-
-	SpawnTile();	
+	SpawnTile();
 }
 
 void ABlockSpawner::SetTileCallback()
-{		
-	// Stopping current tile movement
-	CurrentTile->Speed = 0;
+{
+	CurrentTile->DisableMovement();
 	
+	UE_LOG(LogTemp, Warning, TEXT("CurrentTile Scale: %s"), *CurrentTile->GetActorScale3D().ToString());
+	UE_LOG(LogTemp, Warning, TEXT("PreviousTile Scale: %s"), *PreviousTile->GetActorScale3D().ToString());
+
 	// checking if game is over
 	if (IsGameOver())
 	{
@@ -91,10 +93,8 @@ void ABlockSpawner::SetTileCallback()
 		return;
 	}
 
-	// else
-
 	// Moving our Pawn Root Component Up By Zoffset
-	AddActorWorldOffset(FVector{ 0, 0, ZOffset });
+	AddActorWorldOffset(FVector{ 0, 0, ZOffset });	
 
 	// Calculate Tile Scale
 	SetCurrentTileLocation();
@@ -136,11 +136,7 @@ void ABlockSpawner::SpawnTile()
 {		
 	auto World = GetWorld();
 
-	if (!World)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Cant find World!"));
-		return;
-	}
+	check(World);	
 
 	// should spawn based on previuos tile scale and location
 	if (bIsRightTurn)
@@ -160,7 +156,7 @@ void ABlockSpawner::SpawnTile()
 		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), LeftSpawnPoint->GetComponentTransform());
 		if (CurrentTile)
 		{										
-			CurrentTile->SetActorScale3D(ScaleConverterBug(SpawnScale));
+			CurrentTile->SetActorScale3D(SpawnScale);
 			CurrentTile->MoveDirection = FVector{ 0, 1.0f, 0 };
 			CurrentTile->StartPosition = LeftSpawnPoint->GetComponentTransform().GetLocation();
 			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
@@ -175,15 +171,13 @@ void ABlockSpawner::SetCurrentTileLocation()
 
 	if (bIsRightTurn)
 	{
-		NewCenter.X = (CurrentTile->GetActorLocation().X + PreviousTile->GetActorLocation().X) / 2;
+		NewCenter.X = (PreviousTile->GetActorLocation().X + CurrentTile->GetActorLocation().X) / 2;
 	}
 	else
 	{
-		NewCenter.Y = (CurrentTile->GetActorLocation().Y + PreviousTile->GetActorLocation().Y) / 2;
+		NewCenter.Y = (PreviousTile->GetActorLocation().Y + CurrentTile->GetActorLocation().Y) / 2;
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("New Center: %s"), *NewCenter.ToString());	
-
+	
 	//todo Generate intersected tile part and simulate physics
 }
 
@@ -194,16 +188,16 @@ void ABlockSpawner::SetCurrentTileScale()
 
 	if (bIsRightTurn)
 	{
-		ExtraPartScale = 1 - FMath::Abs(((CurrentTile->GetActorLocation().X + PreviousTile->GetActorLocation().X) / 100));
-		NewScale.Y = 1 - ExtraPartScale;
+		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X) / 100));
+		NewScale.Y = NewScale.Y - ExtraPartScale;
 	}
 	else
 	{
 		// Y is X 
 		// X is Y 
 		// BUG: UE-32676
-		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().Y + PreviousTile->GetActorLocation().Y) / 100));
-		NewScale.X = 1 - ExtraPartScale;
+		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y) / 100));
+		NewScale.X = NewScale.X - ExtraPartScale;
 	}
 
 	// Fcking hack because of bug
@@ -213,15 +207,17 @@ void ABlockSpawner::SetCurrentTileScale()
 
 	UE_LOG(LogTemp, Warning, TEXT("Extra part scale: %f"), ExtraPartScale);
 	UE_LOG(LogTemp, Warning, TEXT("New Scale: %s"), *SpawnScale.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("==================="));
 
-	if (bIsRightTurn)
-	{
-		CurrentTile->SetActorScale3D(SpawnScale);
-	}
-	else
-	{
-		CurrentTile->SetActorScale3D(NewScale);
-	}
+
+	CurrentTile->SetActorScale3D(ScaleConverterBug(SpawnScale));
+	///*if (bIsRightTurn)
+	//{
+	//	CurrentTile->SetActorScale3D(SpawnScale);
+	//}
+	//else
+	//{
+	//}*/
 	CurrentTile->SetActorLocation(NewCenter);
 }
 
@@ -247,23 +243,18 @@ bool ABlockSpawner::IsGameOver() const
 {
 	int32 DefaultExtent = 50; // Our Tile Have Dimensions 100cm x 100cm x 10cm
 	float TileExtent;
-
-	UE_LOG(LogTemp, Warning, TEXT("Current Tile Loc: %s"), *CurrentTile->GetActorLocation().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Previous Tile Loc: %s"), *PreviousTile->GetActorLocation().ToString());
-
 	float Dist;
+
 	if (bIsRightTurn)
 	{
-		TileExtent = DefaultExtent * PreviousTile->GetActorScale3D().X;
+		TileExtent = DefaultExtent * PreviousTile->GetActorScale3D().Y;
 		Dist = FMath::Abs((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X)) / 2;
 	}
 	else
 	{
-		TileExtent = DefaultExtent * PreviousTile->GetActorScale3D().Y;
+		TileExtent = DefaultExtent * PreviousTile->GetActorScale3D().X;
 		Dist = FMath::Abs((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y)) / 2;
 	}	
-
-	UE_LOG(LogTemp, Warning, TEXT("Tile Extent : %f "), TileExtent);
 
 	return Dist >= TileExtent;
 }

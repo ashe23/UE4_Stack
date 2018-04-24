@@ -26,6 +26,8 @@ public:
 
 	void ReverseDirection();
 	bool ShouldReverse() const;
+
+	void DisableMovement();
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	class UStaticMeshComponent* TileMesh;
@@ -48,4 +50,7 @@ public:
 	FVector EndPosition;
 
 	FVector CurrentDestLocation;
+
+private:
+	bool bCanMove;
 };
