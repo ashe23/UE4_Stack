@@ -12,6 +12,7 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
+#include "TransformVectorized.h"
 
 
 // Sets default values
@@ -137,14 +138,18 @@ void ABlockSpawner::SpawnTile()
 	auto World = GetWorld();
 
 	check(World);	
+	
+	FTransform SpawnTransform;
+	SpawnTransform.SetScale3D(SpawnScale);
 
 	// should spawn based on previuos tile scale and location
 	if (bIsRightTurn)
 	{
-		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), RightSpawnPoint->GetComponentTransform());
+		SpawnTransform.SetTranslation(RightSpawnPoint->GetComponentLocation());
+
+		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 		if (CurrentTile)
 		{
-			CurrentTile->SetActorScale3D(SpawnScale);
 			CurrentTile->MoveDirection = FVector{ -1.0f, 0, 0 };
 			CurrentTile->StartPosition = RightSpawnPoint->GetComponentTransform().GetLocation();
 			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
@@ -153,10 +158,11 @@ void ABlockSpawner::SpawnTile()
 	}
 	else
 	{
-		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), LeftSpawnPoint->GetComponentTransform());
+		SpawnTransform.SetTranslation(LeftSpawnPoint->GetComponentLocation());
+
+		CurrentTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 		if (CurrentTile)
 		{										
-			CurrentTile->SetActorScale3D(SpawnScale);
 			CurrentTile->MoveDirection = FVector{ 0, 1.0f, 0 };
 			CurrentTile->StartPosition = LeftSpawnPoint->GetComponentTransform().GetLocation();
 			CurrentTile->EndPosition = CurrentTile->StartPosition + CurrentTile->MoveDirection * CurrentTile->ReverseDistance;
@@ -189,35 +195,17 @@ void ABlockSpawner::SetCurrentTileScale()
 	if (bIsRightTurn)
 	{
 		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X) / 100));
-		NewScale.Y = NewScale.Y - ExtraPartScale;
+		NewScale.X = NewScale.X - ExtraPartScale;
 	}
 	else
 	{
-		// Y is X 
-		// X is Y 
-		// BUG: UE-32676
 		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y) / 100));
-		NewScale.X = NewScale.X - ExtraPartScale;
+		NewScale.Y = NewScale.Y - ExtraPartScale;
 	}
 
-	// Fcking hack because of bug
 ;;	SpawnScale = NewScale;
-	SpawnScale.X = NewScale.Y;
-	SpawnScale.Y = NewScale.X;
 
-	UE_LOG(LogTemp, Warning, TEXT("Extra part scale: %f"), ExtraPartScale);
-	UE_LOG(LogTemp, Warning, TEXT("New Scale: %s"), *SpawnScale.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("==================="));
-
-
-	CurrentTile->SetActorScale3D(ScaleConverterBug(SpawnScale));
-	///*if (bIsRightTurn)
-	//{
-	//	CurrentTile->SetActorScale3D(SpawnScale);
-	//}
-	//else
-	//{
-	//}*/
+	CurrentTile->SetActorScale3D(SpawnScale);	
 	CurrentTile->SetActorLocation(NewCenter);
 }
 
@@ -241,29 +229,24 @@ void ABlockSpawner::UpdateArrowLocations()
 
 bool ABlockSpawner::IsGameOver() const
 {
-	int32 DefaultExtent = 50; // Our Tile Have Dimensions 100cm x 100cm x 10cm
+	// todo:ashe23 fix game over state checking
 	float TileExtent;
 	float Dist;
 
 	if (bIsRightTurn)
 	{
-		TileExtent = DefaultExtent * PreviousTile->GetActorScale3D().Y;
-		Dist = FMath::Abs((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X)) / 2;
+		TileExtent = PreviousTile->GetActorScale3D().X * 50;
+		Dist = FMath::Abs((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X));
 	}
 	else
 	{
-		TileExtent = DefaultExtent * PreviousTile->GetActorScale3D().X;
-		Dist = FMath::Abs((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y)) / 2;
+		TileExtent = PreviousTile->GetActorScale3D().Y * 50;
+		Dist = FMath::Abs((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y));
 	}	
+	
 
-	return Dist >= TileExtent;
+	UE_LOG(LogTemp, Warning, TEXT("Dist: %f"), Dist);
+	UE_LOG(LogTemp, Warning, TEXT("TileExtent: %f"), TileExtent);
+
+	return Dist > TileExtent;
 }
-
-FVector ABlockSpawner::ScaleConverterBug(FVector & Scale)
-{
-	FVector NewScale = Scale;
-	NewScale.X = Scale.Y;
-	NewScale.Y = Scale.X;
-	return NewScale;
-}
-
