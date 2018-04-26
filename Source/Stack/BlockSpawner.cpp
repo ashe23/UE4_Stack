@@ -79,9 +79,6 @@ void ABlockSpawner::SpawnInitialTiles()
 void ABlockSpawner::SetTileCallback()
 {
 	CurrentTile->DisableMovement();
-	
-	UE_LOG(LogTemp, Warning, TEXT("CurrentTile Scale: %s"), *CurrentTile->GetActorScale3D().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("PreviousTile Scale: %s"), *PreviousTile->GetActorScale3D().ToString());
 
 	// checking if game is over
 	if (IsGameOver())
@@ -91,6 +88,10 @@ void ABlockSpawner::SetTileCallback()
 			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Red, TEXT("Game Over!!"));
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Game Over!"));
+		
+		// Setting Simulate Physics for current tile
+		CurrentTile->TileMesh->SetSimulatePhysics(true);
+
 		return;
 	}
 
@@ -203,7 +204,7 @@ void ABlockSpawner::SetCurrentTileScale()
 		NewScale.Y = NewScale.Y - ExtraPartScale;
 	}
 
-;;	SpawnScale = NewScale;
+    SpawnScale = NewScale;
 
 	CurrentTile->SetActorScale3D(SpawnScale);	
 	CurrentTile->SetActorLocation(NewCenter);
@@ -229,24 +230,25 @@ void ABlockSpawner::UpdateArrowLocations()
 
 bool ABlockSpawner::IsGameOver() const
 {
-	// todo:ashe23 fix game over state checking
-	float TileExtent;
-	float Dist;
+	FVector CurrentTileLoc = CurrentTile->GetActorLocation();
+
+	float MinLoc;
+	float MaxLoc;
+
+	bool bIsGameOver = false;
 
 	if (bIsRightTurn)
 	{
-		TileExtent = PreviousTile->GetActorScale3D().X * 50;
-		Dist = FMath::Abs((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X));
+		MinLoc = PreviousTile->GetActorLocation().X - PreviousTile->GetActorScale3D().X * 100;
+		MaxLoc = PreviousTile->GetActorLocation().X + PreviousTile->GetActorScale3D().X * 100;
+		bIsGameOver = CurrentTileLoc.X >= MaxLoc || CurrentTileLoc.X <= MinLoc;
 	}
 	else
 	{
-		TileExtent = PreviousTile->GetActorScale3D().Y * 50;
-		Dist = FMath::Abs((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y));
+		MinLoc = PreviousTile->GetActorLocation().Y - PreviousTile->GetActorScale3D().Y * 100;
+		MaxLoc = PreviousTile->GetActorLocation().Y + PreviousTile->GetActorScale3D().Y * 100;
+		bIsGameOver = CurrentTileLoc.Y >= MaxLoc || CurrentTileLoc.Y <= MinLoc;
 	}	
-	
 
-	UE_LOG(LogTemp, Warning, TEXT("Dist: %f"), Dist);
-	UE_LOG(LogTemp, Warning, TEXT("TileExtent: %f"), TileExtent);
-
-	return Dist > TileExtent;
+	return bIsGameOver;
 }
