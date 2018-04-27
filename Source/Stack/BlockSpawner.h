@@ -62,8 +62,11 @@ private:
 	void SetCurrentTileScale();
 	void UpdateArrowLocations();
 	bool IsGameOver() const;
+	void GenerateExtraTilePart();
+
 
 	FVector SpawnScale;
-
 	FVector NewCenter;
+	FVector ExtraPartCenter;
+	float ExtraPartScale;
 };

@@ -183,15 +183,12 @@ void ABlockSpawner::SetCurrentTileLocation()
 	else
 	{
 		NewCenter.Y = (PreviousTile->GetActorLocation().Y + CurrentTile->GetActorLocation().Y) / 2;
-	}
-	
-	//todo Generate intersected tile part and simulate physics
+	}	
 }
 
 void ABlockSpawner::SetCurrentTileScale()
 {
 	FVector NewScale = PreviousTile->GetActorScale3D();
-	float ExtraPartScale;
 
 	if (bIsRightTurn)
 	{
@@ -208,6 +205,8 @@ void ABlockSpawner::SetCurrentTileScale()
 
 	CurrentTile->SetActorScale3D(SpawnScale);	
 	CurrentTile->SetActorLocation(NewCenter);
+
+	GenerateExtraTilePart();
 }
 
 void ABlockSpawner::UpdateArrowLocations()
@@ -251,4 +250,38 @@ bool ABlockSpawner::IsGameOver() const
 	}	
 
 	return bIsGameOver;
+}
+
+void ABlockSpawner::GenerateExtraTilePart()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Spawning Tile with new scales"));
+
+	UWorld* World = GetWorld();
+
+	check(World);
+
+	FTransform SpawnTransform;
+	FVector Orig;
+	if (bIsRightTurn)
+	{
+		Orig = FVector{ NewCenter.X - 50.f, NewCenter.Y , NewCenter.Z};
+	}
+	else
+	{
+		Orig = FVector{ NewCenter.X, NewCenter.Y - 50.f , NewCenter.Z};
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ExtraPart Scale : %s"), *SpawnScale.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("ExtraPart Orig : %s"), *Orig.ToString());
+
+
+	SpawnTransform.SetLocation(Orig);
+	SpawnTransform.SetScale3D(SpawnScale);
+
+	auto ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
+	if (ExtraTile)
+	{
+		//ExtraTile->TileMesh->SetMaterial(0, ExtraTile->RedTileMaterial);
+		ExtraTile->TileMesh->SetSimulatePhysics(true);
+	}
 }

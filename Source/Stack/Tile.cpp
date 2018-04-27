@@ -16,13 +16,17 @@ ATile::ATile()
 	struct FConstructorStatics
 	{
 		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> SM_Mesh;
+		ConstructorHelpers::FObjectFinderOptional<UMaterial> RedTileMaterial;
 		FConstructorStatics() :
-			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Tile.Tile'"))
+			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Tile.Tile'")),
+			RedTileMaterial(TEXT("Material'/Game/Assets/M_Tile.M_Tile'"))
 		{
 		}
 	};
 
 	static FConstructorStatics ConstructorStatics;
+
+	RedTileMaterial = ConstructorStatics.RedTileMaterial.Get();
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
