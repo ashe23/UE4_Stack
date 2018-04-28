@@ -3,6 +3,7 @@
 #include "Tile.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 ATile::ATile()
@@ -85,5 +86,20 @@ bool ATile::ShouldReverse() const
 void ATile::DisableMovement()
 {
 	bCanMove = false;
+}
+
+void ATile::SetYellowMaterial()
+{
+	SetColor(FLinearColor(1.0, 1.0, 0.0, 1.0));
+}
+
+void ATile::SetColor(FLinearColor && Color)
+{
+	UMaterialInstanceDynamic* MIBaseColor = UMaterialInstanceDynamic::Create(TileMesh->GetMaterial(0), this);
+
+	// yellow
+	MIBaseColor->SetVectorParameterValue(FName(TEXT("BaseColor")), Color);
+
+	TileMesh->SetMaterial(0, MIBaseColor);
 }
 

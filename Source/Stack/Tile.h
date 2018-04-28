@@ -28,6 +28,8 @@ public:
 	bool ShouldReverse() const;
 
 	void DisableMovement();
+	void SetYellowMaterial();
+	void SetColor(FLinearColor && Color);
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	class UStaticMeshComponent* TileMesh;

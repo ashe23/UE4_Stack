@@ -95,6 +95,10 @@ void ABlockSpawner::SetTileCallback()
 		return;
 	}
 
+	//FTimerHandle TT;
+	//GetWorld()->GetTimerManager().SetTimer(TT, this, &ABlockSpawner::CalcTilesIntersection, 1.0f, false);
+	//GetWorld()->GetTimerManager().SetTimer( FTimerHandle(), this, &ABlockSpawner::CalcTilesIntersection, 1.0f, false);
+
 	// Moving our Pawn Root Component Up By Zoffset
 	AddActorWorldOffset(FVector{ 0, 0, ZOffset });	
 
@@ -116,7 +120,7 @@ void ABlockSpawner::SetTileCallback()
 void ABlockSpawner::CalcTilesIntersection()
 {
 	
-
+	UE_LOG(LogTemp, Warning, TEXT("AAA"));
 	
 }
 
@@ -194,17 +198,23 @@ void ABlockSpawner::SetCurrentTileScale()
 	{
 		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().X - PreviousTile->GetActorLocation().X) / 100));
 		NewScale.X = NewScale.X - ExtraPartScale;
+		ExtraPartScale3D = FVector{ExtraPartScale, NewScale.Y, NewScale.Z};
 	}
 	else
 	{
 		ExtraPartScale = FMath::Abs(((CurrentTile->GetActorLocation().Y - PreviousTile->GetActorLocation().Y) / 100));
 		NewScale.Y = NewScale.Y - ExtraPartScale;
+		ExtraPartScale3D = FVector{ NewScale.X, ExtraPartScale, NewScale.Z};
 	}
 
     SpawnScale = NewScale;
 
 	CurrentTile->SetActorScale3D(SpawnScale);	
 	CurrentTile->SetActorLocation(NewCenter);
+
+	// todo: for debug
+	//CurrentTile->SetColor(FLinearColor(1.0, 0.2, 0.0, 1.0));
+	//PreviousTile->SetColor(FLinearColor(1.0, 0.0, 0.0, 1.0));
 
 	GenerateExtraTilePart();
 }
@@ -261,27 +271,45 @@ void ABlockSpawner::GenerateExtraTilePart()
 	check(World);
 
 	FTransform SpawnTransform;
-	FVector Orig;
+	FVector Orig = CurrentTile->GetActorLocation();
+
+	float offset;
+
+	// 
+
 	if (bIsRightTurn)
 	{
-		Orig = FVector{ NewCenter.X - 50.f, NewCenter.Y , NewCenter.Z};
+		offset = PreviousTile->GetActorScale3D().X * 50;
+
+		if (PreviousTile->GetActorLocation().X >= CurrentTile->GetActorLocation().X)
+		{
+			Orig.X -= offset;
+		}
+		else
+		{
+			Orig.X += offset;
+		}
 	}
 	else
 	{
-		Orig = FVector{ NewCenter.X, NewCenter.Y - 50.f , NewCenter.Z};
+		offset = PreviousTile->GetActorScale3D().Y * 50;
+		if (PreviousTile->GetActorLocation().Y >= CurrentTile->GetActorLocation().Y)
+		{
+			Orig.Y -= offset;
+		}
+		else
+		{
+			Orig.Y += offset;
+		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("ExtraPart Scale : %s"), *SpawnScale.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("ExtraPart Orig : %s"), *Orig.ToString());
-
-
 	SpawnTransform.SetLocation(Orig);
-	SpawnTransform.SetScale3D(SpawnScale);
+	SpawnTransform.SetScale3D(ExtraPartScale3D);
 
 	auto ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 	if (ExtraTile)
 	{
-		//ExtraTile->TileMesh->SetMaterial(0, ExtraTile->RedTileMaterial);
+		ExtraTile->DisableMovement();
 		ExtraTile->TileMesh->SetSimulatePhysics(true);
 	}
 }

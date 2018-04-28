@@ -69,4 +69,5 @@ private:
 	FVector NewCenter;
 	FVector ExtraPartCenter;
 	float ExtraPartScale;
+	FVector ExtraPartScale3D;
 };
