@@ -36,6 +36,7 @@ ATile::ATile()
 	TileMesh->SetStaticMesh(ConstructorStatics.SM_Mesh.Get());
 	TileMesh->SetMobility(EComponentMobility::Movable);
 	TileMesh->SetVisibility(true);
+	TileMesh->CastShadow = false;
 }
 
 // Called when the game starts or when spawned

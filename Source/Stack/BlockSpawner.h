@@ -57,17 +57,22 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pawn Settings")
 	class ATile* PreviousTile;
+
+	float AlignmentThreshold;
+
 private:
 	void SetCurrentTileLocation();
 	void SetCurrentTileScale();
 	void UpdateArrowLocations();
 	bool IsGameOver() const;
 	void GenerateExtraTilePart();
+	void CheckTileExtraPart();
 
 
 	FVector SpawnScale;
 	FVector NewCenter;
 	FVector ExtraPartCenter;
 	float ExtraPartScale;
+	bool bShouldSpawnExtraPart;
 	FVector ExtraPartScale3D;
 };

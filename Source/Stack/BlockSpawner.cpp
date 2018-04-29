@@ -22,6 +22,9 @@ ABlockSpawner::ABlockSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	ZOffset = 10.0f;
 	SpawnScale = FVector{ 1.f };
+	AlignmentThreshold = 5;
+	bShouldSpawnExtraPart = true;
+
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
@@ -36,9 +39,6 @@ ABlockSpawner::ABlockSpawner()
 
 	RightSpawnPoint->SetupAttachment(RootComponent);
 	LeftSpawnPoint->SetupAttachment(RootComponent);
-
-	RightSpawnPoint->bHiddenInGame = false;
-	LeftSpawnPoint->bHiddenInGame = false;
 
 	OurCameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	OurCameraSpringArm->SetupAttachment(RootComponent);
@@ -95,9 +95,7 @@ void ABlockSpawner::SetTileCallback()
 		return;
 	}
 
-	//FTimerHandle TT;
-	//GetWorld()->GetTimerManager().SetTimer(TT, this, &ABlockSpawner::CalcTilesIntersection, 1.0f, false);
-	//GetWorld()->GetTimerManager().SetTimer( FTimerHandle(), this, &ABlockSpawner::CalcTilesIntersection, 1.0f, false);
+	CheckTileExtraPart();
 
 	// Moving our Pawn Root Component Up By Zoffset
 	AddActorWorldOffset(FVector{ 0, 0, ZOffset });	
@@ -212,11 +210,12 @@ void ABlockSpawner::SetCurrentTileScale()
 	CurrentTile->SetActorScale3D(SpawnScale);	
 	CurrentTile->SetActorLocation(NewCenter);
 
-	// todo: for debug
-	//CurrentTile->SetColor(FLinearColor(1.0, 0.2, 0.0, 1.0));
-	//PreviousTile->SetColor(FLinearColor(1.0, 0.0, 0.0, 1.0));
+	if (bShouldSpawnExtraPart)
+	{
+		GenerateExtraTilePart();
+	}
 
-	GenerateExtraTilePart();
+	bShouldSpawnExtraPart = true;
 }
 
 void ABlockSpawner::UpdateArrowLocations()
@@ -264,8 +263,6 @@ bool ABlockSpawner::IsGameOver() const
 
 void ABlockSpawner::GenerateExtraTilePart()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Spawning Tile with new scales"));
-
 	UWorld* World = GetWorld();
 
 	check(World);
@@ -274,8 +271,6 @@ void ABlockSpawner::GenerateExtraTilePart()
 	FVector Orig = CurrentTile->GetActorLocation();
 
 	float offset;
-
-	// 
 
 	if (bIsRightTurn)
 	{
@@ -311,5 +306,28 @@ void ABlockSpawner::GenerateExtraTilePart()
 	{
 		ExtraTile->DisableMovement();
 		ExtraTile->TileMesh->SetSimulatePhysics(true);
+	}
+}
+
+void ABlockSpawner::CheckTileExtraPart()
+{
+	float Delta;
+	if (bIsRightTurn)
+	{
+		Delta = PreviousTile->GetActorLocation().X - CurrentTile->GetActorLocation().X;
+	}
+	else
+	{
+		Delta = PreviousTile->GetActorLocation().Y - CurrentTile->GetActorLocation().Y;
+	}
+
+	Delta = FMath::Abs(Delta);
+
+	if (Delta <= AlignmentThreshold)
+	{
+		FVector PrevTileLoc = PreviousTile->GetActorLocation();
+		PrevTileLoc.Z = CurrentTile->GetActorLocation().Z;
+		CurrentTile->SetActorLocation(PrevTileLoc);
+		bShouldSpawnExtraPart = false;
 	}
 }
