@@ -6,7 +6,7 @@
 AStackGameModeBase::AStackGameModeBase()
 {
 	DefaultPawnClass = ABlockSpawner::StaticClass();
+
+
+	CurrentTileCount = 0;
 }
-
-
-

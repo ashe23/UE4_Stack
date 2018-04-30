@@ -20,7 +20,7 @@ ATile::ATile()
 		ConstructorHelpers::FObjectFinderOptional<UMaterial> RedTileMaterial;
 		FConstructorStatics() :
 			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Tile.Tile'")),
-			RedTileMaterial(TEXT("Material'/Game/Assets/M_Tile.M_Tile'"))
+			RedTileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'"))
 		{
 		}
 	};
@@ -89,16 +89,10 @@ void ATile::DisableMovement()
 	bCanMove = false;
 }
 
-void ATile::SetYellowMaterial()
-{
-	SetColor(FLinearColor(1.0, 1.0, 0.0, 1.0));
-}
-
 void ATile::SetColor(FLinearColor && Color)
 {
 	UMaterialInstanceDynamic* MIBaseColor = UMaterialInstanceDynamic::Create(TileMesh->GetMaterial(0), this);
 
-	// yellow
 	MIBaseColor->SetVectorParameterValue(FName(TEXT("BaseColor")), Color);
 
 	TileMesh->SetMaterial(0, MIBaseColor);

@@ -16,6 +16,10 @@ class STACK_API AStackGameModeBase : public AGameModeBase
 public:
 	AStackGameModeBase();
 	
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game Stats")
+	int32 CurrentTileCount;	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Stats")
+	bool IsGameOver;
 	
 };

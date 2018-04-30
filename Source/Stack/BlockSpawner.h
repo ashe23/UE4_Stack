@@ -22,9 +22,6 @@ protected:
 	void SpawnInitialTiles();
 
 	void SetTileCallback();
-
-	void CalcTilesIntersection();
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -59,6 +56,7 @@ public:
 	class ATile* PreviousTile;
 
 	float AlignmentThreshold;
+
 
 private:
 	void SetCurrentTileLocation();

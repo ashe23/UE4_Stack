@@ -2,17 +2,20 @@
 
 #include "BlockSpawner.h"
 #include "Tile.h"
+#include "StackGameModeBase.h"
 
 #include "Components/ArrowComponent.h"
 #include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
 #include "Runtime/Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Public/Rendering/PositionVertexBuffer.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
 #include "TransformVectorized.h"
+
 
 
 // Sets default values
@@ -60,7 +63,7 @@ void ABlockSpawner::BeginPlay()
 {
 	Super::BeginPlay();	
 
-	SpawnInitialTiles();
+	SpawnInitialTiles();	
 }
 
 void ABlockSpawner::SpawnInitialTiles()
@@ -80,20 +83,38 @@ void ABlockSpawner::SetTileCallback()
 {
 	CurrentTile->DisableMovement();
 
+	auto GameMode = Cast<AStackGameModeBase>(GetWorld()->GetAuthGameMode());
+
 	// checking if game is over
 	if (IsGameOver())
-	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Red, TEXT("Game Over!!"));
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Game Over!"));
-		
+	{		
 		// Setting Simulate Physics for current tile
 		CurrentTile->TileMesh->SetSimulatePhysics(true);
 
+		// Move Camera Back
+		OurCameraSpringArm->TargetArmLength = 500.0f;
+
+		auto PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
+		{
+			PlayerController->bShowMouseCursor = true;
+		}
+
+		if (GameMode)
+		{
+			GameMode->IsGameOver = true;
+		}
+
+
 		return;
 	}
+
+	// increment tiles count
+	if (GameMode)
+	{
+		GameMode->CurrentTileCount++;
+	}
+
 
 	CheckTileExtraPart();
 
@@ -112,14 +133,6 @@ void ABlockSpawner::SetTileCallback()
 
 	// Spawning New Tile with old scales
 	SpawnTile();
-
-}
-
-void ABlockSpawner::CalcTilesIntersection()
-{
-	
-	UE_LOG(LogTemp, Warning, TEXT("AAA"));
-	
 }
 
 // Called every frame
