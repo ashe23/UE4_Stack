@@ -18,9 +18,11 @@ ATile::ATile()
 	{
 		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> SM_Mesh;
 		ConstructorHelpers::FObjectFinderOptional<UMaterial> RedTileMaterial;
+		ConstructorHelpers::FObjectFinderOptional<UObject> Ph_Material;
 		FConstructorStatics() :
-			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Tile.Tile'")),
-			RedTileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'"))
+			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Meshes/Tile.Tile'")),
+			RedTileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'")),
+			Ph_Material(TEXT("PhysicalMaterial'/Game/Assets/Materials/PM_Bounciness.PM_Bounciness'"))
 		{
 		}
 	};
@@ -35,6 +37,7 @@ ATile::ATile()
 	TileMesh->SetupAttachment(RootComponent);
 	TileMesh->SetStaticMesh(ConstructorStatics.SM_Mesh.Get());
 	TileMesh->SetMobility(EComponentMobility::Movable);
+	TileMesh->SetPhysMaterialOverride(reinterpret_cast<UPhysicalMaterial*>(ConstructorStatics.Ph_Material.Get()));
 	TileMesh->SetVisibility(true);
 	TileMesh->CastShadow = false;
 }

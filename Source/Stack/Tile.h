@@ -33,8 +33,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	class UStaticMeshComponent* TileMesh;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	class UMaterial* RedTileMaterial;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
+	UPhysicalMaterial* PhysicalMaterial;
 
 	UStaticMesh* SM_Mesh;
 	
