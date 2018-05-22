@@ -10,6 +10,7 @@
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Public/Rendering/PositionVertexBuffer.h"
+#include "TimerManager.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
@@ -25,7 +26,7 @@ ABlockSpawner::ABlockSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	ZOffset = 10.0f;
 	SpawnScale = FVector{ 1.f };
-	AlignmentThreshold = 5;
+	AlignmentThreshold = 1;
 	bShouldSpawnExtraPart = true;
 
 
@@ -284,10 +285,11 @@ void ABlockSpawner::GenerateExtraTilePart()
 	FVector Orig = CurrentTile->GetActorLocation();
 
 	float offset;
+	float CollisionFixDist = 0.02f;
 
 	if (bIsRightTurn)
 	{
-		offset = PreviousTile->GetActorScale3D().X * 50;
+		offset = PreviousTile->GetActorScale3D().X * 50 + CollisionFixDist;
 
 		if (PreviousTile->GetActorLocation().X >= CurrentTile->GetActorLocation().X)
 		{
@@ -297,10 +299,11 @@ void ABlockSpawner::GenerateExtraTilePart()
 		{
 			Orig.X += offset;
 		}
+
 	}
 	else
 	{
-		offset = PreviousTile->GetActorScale3D().Y * 50;
+		offset = PreviousTile->GetActorScale3D().Y * 50 + CollisionFixDist;
 		if (PreviousTile->GetActorLocation().Y >= CurrentTile->GetActorLocation().Y)
 		{
 			Orig.Y -= offset;
@@ -309,6 +312,7 @@ void ABlockSpawner::GenerateExtraTilePart()
 		{
 			Orig.Y += offset;
 		}
+
 	}
 
 	SpawnTransform.SetLocation(Orig);
@@ -317,8 +321,11 @@ void ABlockSpawner::GenerateExtraTilePart()
 	auto ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 	if (ExtraTile)
 	{
-		ExtraTile->DisableMovement();
-		ExtraTile->TileMesh->SetSimulatePhysics(true);
+		ExtraTilePart = ExtraTile;
+		ExtraTilePart->DisableMovement();
+
+		FTimerHandle EmptyHandler;
+		GetWorldTimerManager().SetTimer(EmptyHandler, this, &ABlockSpawner::EnablePhysics, 0.1f, false);
 	}
 }
 
@@ -342,5 +349,13 @@ void ABlockSpawner::CheckTileExtraPart()
 		PrevTileLoc.Z = CurrentTile->GetActorLocation().Z;
 		CurrentTile->SetActorLocation(PrevTileLoc);
 		bShouldSpawnExtraPart = false;
+	}
+}
+
+void ABlockSpawner::EnablePhysics()
+{
+	if (ExtraTilePart)
+	{
+		ExtraTilePart->TileMesh->SetSimulatePhysics(true);
 	}
 }

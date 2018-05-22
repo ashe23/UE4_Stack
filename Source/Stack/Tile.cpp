@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Runtime/Engine/Classes/Components/BoxComponent.h"
 
 // Sets default values
 ATile::ATile()
@@ -18,11 +19,11 @@ ATile::ATile()
 	{
 		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> SM_Mesh;
 		ConstructorHelpers::FObjectFinderOptional<UMaterial> RedTileMaterial;
-		ConstructorHelpers::FObjectFinderOptional<UObject> Ph_Material;
+		//ConstructorHelpers::FObjectFinderOptional<UObject> Ph_Material;
 		FConstructorStatics() :
 			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Meshes/Tile.Tile'")),
-			RedTileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'")),
-			Ph_Material(TEXT("PhysicalMaterial'/Game/Assets/Materials/PM_Bounciness.PM_Bounciness'"))
+			RedTileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'"))
+			//Ph_Material(TEXT("PhysicalMaterial'/Game/Assets/Materials/PM_Bounciness.PM_Bounciness'"))
 		{
 		}
 	};
@@ -32,12 +33,19 @@ ATile::ATile()
 	RedTileMaterial = ConstructorStatics.RedTileMaterial.Get();
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	//BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	//BoxComponent->AttachTo(RootComponent);
+	//BoxComponent->SetBoxExtent(FVector{ 51.f,51.f,6.f });
+	//BoxComponent->bHiddenInGame = false;
 
 	TileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TileMesh"));
 	TileMesh->SetupAttachment(RootComponent);
 	TileMesh->SetStaticMesh(ConstructorStatics.SM_Mesh.Get());
 	TileMesh->SetMobility(EComponentMobility::Movable);
-	TileMesh->SetPhysMaterialOverride(reinterpret_cast<UPhysicalMaterial*>(ConstructorStatics.Ph_Material.Get()));
+	TileMesh->SetAngularDamping(0.3f);
+	TileMesh->SetLinearDamping(0.4f);
+
+	//TileMesh->SetPhysMaterialOverride(reinterpret_cast<UPhysicalMaterial*>(ConstructorStatics.Ph_Material.Get()));
 	TileMesh->SetVisibility(true);
 	TileMesh->CastShadow = false;
 }

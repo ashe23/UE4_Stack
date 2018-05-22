@@ -65,8 +65,10 @@ private:
 	bool IsGameOver() const;
 	void GenerateExtraTilePart();
 	void CheckTileExtraPart();
+	void EnablePhysics();
 
 
+	class ATile* ExtraTilePart;
 	FVector SpawnScale;
 	FVector NewCenter;
 	FVector ExtraPartCenter;
