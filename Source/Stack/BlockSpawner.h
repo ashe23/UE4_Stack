@@ -68,7 +68,7 @@ private:
 	void EnablePhysics();
 
 
-	class ATile* ExtraTilePart;
+	class ATile* ExtraTile;
 	FVector SpawnScale;
 	FVector NewCenter;
 	FVector ExtraPartCenter;

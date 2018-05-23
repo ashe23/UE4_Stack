@@ -26,7 +26,7 @@ ABlockSpawner::ABlockSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	ZOffset = 10.0f;
 	SpawnScale = FVector{ 1.f };
-	AlignmentThreshold = 1;
+	AlignmentThreshold = 2;
 	bShouldSpawnExtraPart = true;
 
 
@@ -318,11 +318,10 @@ void ABlockSpawner::GenerateExtraTilePart()
 	SpawnTransform.SetLocation(Orig);
 	SpawnTransform.SetScale3D(ExtraPartScale3D);
 
-	auto ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
+	ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 	if (ExtraTile)
-	{
-		ExtraTilePart = ExtraTile;
-		ExtraTilePart->DisableMovement();
+	{		
+		ExtraTile->DisableMovement();
 
 		FTimerHandle EmptyHandler;
 		GetWorldTimerManager().SetTimer(EmptyHandler, this, &ABlockSpawner::EnablePhysics, 0.1f, false);
@@ -343,19 +342,27 @@ void ABlockSpawner::CheckTileExtraPart()
 
 	Delta = FMath::Abs(Delta);
 
+
+
+	UE_LOG(LogTemp, Warning, TEXT("Delta: %f"), Delta);
+
 	if (Delta <= AlignmentThreshold)
 	{
 		FVector PrevTileLoc = PreviousTile->GetActorLocation();
 		PrevTileLoc.Z = CurrentTile->GetActorLocation().Z;
 		CurrentTile->SetActorLocation(PrevTileLoc);
 		bShouldSpawnExtraPart = false;
+		UE_LOG(LogTemp, Warning, TEXT("Same Position!"));
+
+		// todo:ashe23 add particle effect on tile set
+		// need also keep counter of correct tile set streak and if its count more then 5 , we should enlarge tile scales by 50%
 	}
 }
 
 void ABlockSpawner::EnablePhysics()
 {
-	if (ExtraTilePart)
+	if (ExtraTile)
 	{
-		ExtraTilePart->TileMesh->SetSimulatePhysics(true);
+		ExtraTile->TileMesh->SetSimulatePhysics(true);
 	}
 }

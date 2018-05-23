@@ -12,7 +12,7 @@ ATile::ATile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Speed = 300.0f;
+	Speed = 200.0f;
 	ReverseDistance = 500.0f;
 	bCanMove = true;
 
@@ -22,7 +22,7 @@ ATile::ATile()
 		ConstructorHelpers::FObjectFinderOptional<UMaterial> TileMaterial;
 		FConstructorStatics() :
 			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Meshes/Tile.Tile'")),
-			TileMaterial(TEXT("MaterialInstanceConstant'/Game/Assets/Materials/MI_Tile.MI_Tile'"))
+			TileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'"))
 		{
 		}
 	};
