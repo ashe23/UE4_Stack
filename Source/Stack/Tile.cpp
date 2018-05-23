@@ -50,8 +50,8 @@ void ATile::BeginPlay()
 
 
 	// Every 2 sec change color of tile
-	FTimerHandle EmptyTimehandler;
-	GetWorldTimerManager().SetTimer(EmptyTimehandler, this, &ATile::SetColor, 2.0f, true);
+	//FTimerHandle EmptyTimehandler;
+	//GetWorldTimerManager().SetTimer(EmptyTimehandler, this, &ATile::SetColor, 2.0f, true);
 }
 
 // Called every frame
