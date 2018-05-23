@@ -40,9 +40,6 @@ public:
 	UPhysicalMaterial* PhysicalMaterial;
 
 	UStaticMesh* SM_Mesh;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	class UBoxComponent* BoxComponent;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	float ReverseDistance;

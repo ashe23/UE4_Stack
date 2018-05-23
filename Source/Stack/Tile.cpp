@@ -33,11 +33,7 @@ ATile::ATile()
 	RedTileMaterial = ConstructorStatics.RedTileMaterial.Get();
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	//BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-	//BoxComponent->AttachTo(RootComponent);
-	//BoxComponent->SetBoxExtent(FVector{ 51.f,51.f,6.f });
-	//BoxComponent->bHiddenInGame = false;
-
+	
 	TileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TileMesh"));
 	TileMesh->SetupAttachment(RootComponent);
 	TileMesh->SetStaticMesh(ConstructorStatics.SM_Mesh.Get());
