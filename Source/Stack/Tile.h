@@ -34,7 +34,7 @@ public:
 	class UStaticMeshComponent* TileMesh;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
-	class UMaterial* RedTileMaterial;
+	class UMaterial* TileMaterial;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	UPhysicalMaterial* PhysicalMaterial;

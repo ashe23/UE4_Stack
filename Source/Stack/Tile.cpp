@@ -5,6 +5,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 #include "Runtime/Engine/Classes/Components/BoxComponent.h"
+#include "TimerManager.h"
 
 // Sets default values
 ATile::ATile()
@@ -18,19 +19,17 @@ ATile::ATile()
 	struct FConstructorStatics
 	{
 		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> SM_Mesh;
-		ConstructorHelpers::FObjectFinderOptional<UMaterial> RedTileMaterial;
-		//ConstructorHelpers::FObjectFinderOptional<UObject> Ph_Material;
+		ConstructorHelpers::FObjectFinderOptional<UMaterial> TileMaterial;
 		FConstructorStatics() :
 			SM_Mesh(TEXT("StaticMesh'/Game/Assets/Meshes/Tile.Tile'")),
-			RedTileMaterial(TEXT("Material'/Game/Assets/Materials/M_Tile.M_Tile'"))
-			//Ph_Material(TEXT("PhysicalMaterial'/Game/Assets/Materials/PM_Bounciness.PM_Bounciness'"))
+			TileMaterial(TEXT("MaterialInstanceConstant'/Game/Assets/Materials/MI_Tile.MI_Tile'"))
 		{
 		}
 	};
 
 	static FConstructorStatics ConstructorStatics;
 
-	RedTileMaterial = ConstructorStatics.RedTileMaterial.Get();
+	TileMaterial = ConstructorStatics.TileMaterial.Get();
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	
@@ -40,8 +39,6 @@ ATile::ATile()
 	TileMesh->SetMobility(EComponentMobility::Movable);
 	TileMesh->SetAngularDamping(0.3f);
 	TileMesh->SetLinearDamping(0.4f);
-
-	//TileMesh->SetPhysMaterialOverride(reinterpret_cast<UPhysicalMaterial*>(ConstructorStatics.Ph_Material.Get()));
 	TileMesh->SetVisibility(true);
 	TileMesh->CastShadow = false;
 }
@@ -50,6 +47,11 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();	
+
+
+	// Every 2 sec change color of tile
+	FTimerHandle EmptyTimehandler;
+	GetWorldTimerManager().SetTimer(EmptyTimehandler, this, &ATile::SetColor, 2.0f, true);
 }
 
 // Called every frame
