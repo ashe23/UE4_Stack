@@ -19,6 +19,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+	UMaterial* DefaultMaterial;
+
+	UStaticMesh* SM_Mesh;
+protected:
+	// This part for Tile Color Changing
+	UPROPERTY()
+	class UTimelineComponent* TileColorChangeTimeline;
+
+	UFUNCTION()
+	void TimelineCallback(FLinearColor Color);
+
+	UFUNCTION()
+	void TimelineFinishedCallback();
+
+	void PlayTimeline();
 
 public:	
 	// Called every frame
@@ -28,19 +44,16 @@ public:
 	bool ShouldReverse() const;
 
 	void DisableMovement();
-	void SetColor(FLinearColor && Color);
-	
+	void SetColor(FLinearColor Color);
+
+	FVector CurrentDestLocation;
+public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	class UStaticMeshComponent* TileMesh;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
-	class UMaterial* TileMaterial;
+	class UMaterialInterface* TileMaterial;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
-	UPhysicalMaterial* PhysicalMaterial;
-
-	UStaticMesh* SM_Mesh;
-	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	float ReverseDistance;
 
@@ -56,8 +69,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	FVector EndPosition;
 
-	FVector CurrentDestLocation;
-
-private:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	bool bCanMove;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
+	class UCurveLinearColor* ColorChangeCurve;
 };
