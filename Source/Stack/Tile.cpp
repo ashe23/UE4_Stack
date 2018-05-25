@@ -71,7 +71,7 @@ void ATile::BeginPlay()
 		this->BlueprintCreatedComponents.Add(TileColorChangeTimeline);
 		TileColorChangeTimeline->SetLooping(true);
 		TileColorChangeTimeline->SetTimelineLength(40.0f);
-		TileColorChangeTimeline->SetPlaybackPosition(0.0f, false);
+		TileColorChangeTimeline->SetPlaybackPosition(CurrentPlaybackPosition, false);
 
 		OnTimelineCallback.BindUFunction(this, FName("TimelineCallback"));
 		OnTimelineFinishedCallback.BindUFunction(this, FName("TimelineFinishedCallback"));
@@ -86,8 +86,8 @@ void ATile::BeginPlay()
 
 void ATile::TimelineCallback(FLinearColor Color)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Color: %s"), *Color.ToString());
-
+	//UE_LOG(LogTemp, Warning, TEXT("Color: %s"), *Color.ToString());
+	CurrentPlaybackPosition = TileColorChangeTimeline->GetPlaybackPosition();
 	SetColor(Color);
 }
 

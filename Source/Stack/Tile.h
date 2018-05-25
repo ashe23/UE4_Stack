@@ -15,18 +15,18 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+	// This part for Tile Color Changing
+	UPROPERTY()
+	class UTimelineComponent* TileColorChangeTimeline;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	UMaterial* DefaultMaterial;
+	class UMaterial* DefaultMaterial;
 
 	UStaticMesh* SM_Mesh;
 protected:
-	// This part for Tile Color Changing
-	UPROPERTY()
-	class UTimelineComponent* TileColorChangeTimeline;
 
 	UFUNCTION()
 	void TimelineCallback(FLinearColor Color);
@@ -74,4 +74,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Settings")
 	class UCurveLinearColor* ColorChangeCurve;
+
+	float CurrentPlaybackPosition;
 };

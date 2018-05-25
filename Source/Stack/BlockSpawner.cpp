@@ -16,6 +16,7 @@
 #include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
 #include "TransformVectorized.h"
+#include "Runtime/Engine/Classes/Components/TimelineComponent.h"
 
 
 
@@ -299,7 +300,6 @@ void ABlockSpawner::GenerateExtraTilePart()
 		{
 			Orig.X += offset;
 		}
-
 	}
 	else
 	{
@@ -312,7 +312,6 @@ void ABlockSpawner::GenerateExtraTilePart()
 		{
 			Orig.Y += offset;
 		}
-
 	}
 
 	SpawnTransform.SetLocation(Orig);
@@ -321,7 +320,7 @@ void ABlockSpawner::GenerateExtraTilePart()
 	ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 	if (ExtraTile)
 	{		
-		ExtraTile->DisableMovement();
+		ExtraTile->DisableMovement();		
 
 		FTimerHandle EmptyHandler;
 		GetWorldTimerManager().SetTimer(EmptyHandler, this, &ABlockSpawner::EnablePhysics, 0.1f, false);
@@ -342,8 +341,6 @@ void ABlockSpawner::CheckTileExtraPart()
 
 	Delta = FMath::Abs(Delta);
 
-
-
 	UE_LOG(LogTemp, Warning, TEXT("Delta: %f"), Delta);
 
 	if (Delta <= AlignmentThreshold)
@@ -363,6 +360,9 @@ void ABlockSpawner::EnablePhysics()
 {
 	if (ExtraTile)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Playback Position: %f"), CurrentTile->CurrentPlaybackPosition);
+		ExtraTile->CurrentPlaybackPosition = CurrentTile->CurrentPlaybackPosition;
 		ExtraTile->TileMesh->SetSimulatePhysics(true);
+		//ExtraTile->TileColorChangeTimeline->SetPlaybackPosition(CurrentTile->CurrentPlaybackPosition, false);
 	}
 }
