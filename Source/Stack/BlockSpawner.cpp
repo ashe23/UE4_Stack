@@ -320,7 +320,8 @@ void ABlockSpawner::GenerateExtraTilePart()
 	ExtraTile = World->SpawnActor<ATile>(ATile::StaticClass(), SpawnTransform);
 	if (ExtraTile)
 	{		
-		ExtraTile->DisableMovement();		
+		ExtraTile->DisableMovement();	
+		ExtraTile->SetLifeSpan(10.0f);
 
 		FTimerHandle EmptyHandler;
 		GetWorldTimerManager().SetTimer(EmptyHandler, this, &ABlockSpawner::EnablePhysics, 0.1f, false);
