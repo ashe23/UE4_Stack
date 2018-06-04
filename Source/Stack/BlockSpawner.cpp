@@ -47,7 +47,7 @@ ABlockSpawner::ABlockSpawner()
 
 	OurCameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	OurCameraSpringArm->SetupAttachment(RootComponent);
-	OurCameraSpringArm->TargetArmLength = 200.f;
+	OurCameraSpringArm->TargetArmLength = 300.f;
 	OurCameraSpringArm->bEnableCameraLag = true;
 	OurCameraSpringArm->CameraLagSpeed = 3.0f;
 	OurCameraSpringArm->bDoCollisionTest = false;
@@ -55,6 +55,9 @@ ABlockSpawner::ABlockSpawner()
 
 	OurCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("GameCamera"));
 	OurCamera->SetupAttachment(OurCameraSpringArm, USpringArmComponent::SocketName);
+	OurCamera->SetAspectRatio(0.5625f);
+	OurCamera->SetProjectionMode(ECameraProjectionMode::Orthographic);
+	OurCamera->OrthoWidth = 200.f;
 
 	//Take control of the default Player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -95,6 +98,7 @@ void ABlockSpawner::SetTileCallback()
 
 		// Move Camera Back
 		OurCameraSpringArm->TargetArmLength = 500.0f;
+		OurCamera->OrthoWidth = 500.f;
 
 		auto PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		if (PlayerController)
