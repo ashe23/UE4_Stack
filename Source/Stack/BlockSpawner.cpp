@@ -290,7 +290,7 @@ void ABlockSpawner::GenerateExtraTilePart()
 	FVector Orig = CurrentTile->GetActorLocation();
 
 	float offset;
-	float CollisionFixDist = 0.02f;
+	float CollisionFixDist = 0.05f;
 
 	if (bIsRightTurn)
 	{
