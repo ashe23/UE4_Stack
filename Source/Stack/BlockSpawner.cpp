@@ -57,7 +57,7 @@ ABlockSpawner::ABlockSpawner()
 	OurCamera->SetupAttachment(OurCameraSpringArm, USpringArmComponent::SocketName);
 	OurCamera->SetAspectRatio(0.5625f);
 	OurCamera->SetProjectionMode(ECameraProjectionMode::Orthographic);
-	OurCamera->OrthoWidth = 200.f;
+	OurCamera->OrthoWidth = 150.f;
 
 	//Take control of the default Player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
